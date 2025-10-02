@@ -16,6 +16,8 @@
     "vite": "^7.1.2"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "axios": "^1.12.2",
     "modern-normalize": "^3.0.1",
     "react": "^19.0.0",
