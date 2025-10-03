@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MovieGrid from "../MovieGrid/MovieGrid";
 import SearchBar from "../SearchBar/SearchBar";
 import css from "./App.module.css";
-import { Toaster } from "react-hot-toast";
-import fetchMovies from "../../services/movieService";
-import type { Movie, MoviesHttpResponse } from "../../types/movie";
+import toast, { Toaster } from "react-hot-toast";
+import fetchMovies, {
+  type MoviesHttpResponse,
+} from "../../services/movieService";
+import type { Movie } from "../../types/movie";
 import Loader from "../Loader/Loader";
 import MovieModal from "../MovieModal/MovieModal";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
@@ -16,12 +18,20 @@ const App = () => {
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isLoading, isError } = useQuery<MoviesHttpResponse>({
+  const { data, isLoading, isError, isSuccess } = useQuery<MoviesHttpResponse>({
     queryKey: ["movies", searchTerm, currentPage],
     queryFn: () => fetchMovies(searchTerm, currentPage),
     enabled: searchTerm.trim() !== "",
     placeholderData: keepPreviousData,
   });
+
+  useEffect(() => {
+    isSuccess &&
+      searchTerm.trim() !== "" &&
+      data?.results.length === 0 &&
+      !isLoading &&
+      toast.error("No movies found for your search.", { id: "no-results" });
+  }, [isLoading, isSuccess, data?.results.length, searchTerm]);
 
   const handleSubmit = async (query: string) => {
     setCurrentPage(1);
@@ -48,9 +58,6 @@ const App = () => {
         />
       )}
       {data && <MovieGrid movies={data.results} onSelect={setSelectedMovie} />}
-      {data?.results.length === 0 && !isLoading && (
-        <p className={css.text}>No movies found for your search.</p>
-      )}
       {selectedMovie !== null && (
         <MovieModal
           movie={selectedMovie}
